@@ -1,5 +1,5 @@
-import os
 import requests
+import os
 import json
 import time
 
@@ -17,6 +17,7 @@ class DDNS:
         self.domain_name_id = None
         self.dns_record_name = dns_record_name
         self.dns_record_id = None
+        self.dns_record_content = None
         self.ip = None
 
     def get_domain_id(self):
@@ -34,6 +35,12 @@ class DDNS:
             if dns_record["name"] == self.dns_record_name:
                 self.dns_record_id = dns_record["id"]
                 break
+
+    def get_dns_record_content(self):
+        url = "https://api.cloudflare.com/client/v4/zones/{}/dns_records/{}".format(self.domain_name_id, self.dns_record_id)
+        response = requests.get(url, headers=self.headers)
+        dns_record = response.json()["result"]
+        self.dns_record_content = dns_record["content"]
 
     def update_dns_record(self):
         url = "https://api.cloudflare.com/client/v4/zones/{}/dns_records/{}".format(self.domain_name_id, self.dns_record_id)
@@ -73,11 +80,12 @@ def main():
     ddns = DDNS(config["email"], config["global_api_key"], config["domain_name"], config["dns_record_name"])
     ddns.get_domain_id()
     ddns.get_dns_record_id()
-    ddns.get_ip()
     while True:
+        ddns.get_dns_record_content()
         ddns.get_ip()
-        ddns.update_dns_record()
-        time.sleep(60)
+        if ddns.ip != ddns.dns_record_content:
+            ddns.update_dns_record()
+        time.sleep(10)
 
 
 if __name__ == '__main__':
