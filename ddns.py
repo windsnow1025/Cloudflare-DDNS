@@ -1,3 +1,4 @@
+import os
 import requests
 import json
 import time
@@ -52,8 +53,22 @@ class DDNS:
 
 
 def main():
-    with open('config.json') as f:
-        config = json.load(f)
+    if not os.path.exists('config.json'):
+        email = input("Enter your email: ")
+        global_api_key = input("Enter your global API key: ")
+        domain_name = input("Enter your domain name: ")
+        dns_record_name = input("Enter your DNS record name: ")
+        config = {
+            "email": email,
+            "global_api_key": global_api_key,
+            "domain_name": domain_name,
+            "dns_record_name": dns_record_name
+        }
+        with open('config.json', 'w') as f:
+            json.dump(config, f)
+    else:
+        with open('config.json') as f:
+            config = json.load(f)
 
     ddns = DDNS(config["email"], config["global_api_key"], config["domain_name"], config["dns_record_name"])
     ddns.get_domain_id()
