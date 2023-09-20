@@ -3,5 +3,5 @@
 ## Installation
 
 ```bash
-pyinstaller --onefile ddns.py
+pyinstaller --onefile main.py
 ```
