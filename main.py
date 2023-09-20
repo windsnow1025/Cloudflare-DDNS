@@ -26,8 +26,8 @@ def main():
     ddns.get_domain_id()
     ddns.get_dns_record_id()
     while True:
-        ddns.get_dns_record()
         try:
+            ddns.get_dns_record()
             ddns.get_ip()
             if ddns.ip != ddns.dns_record_content:
                 ddns.update_dns_record()
