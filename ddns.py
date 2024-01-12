@@ -56,13 +56,13 @@ class DDNS:
 
     def get_ip(self):
         if self.dns_record_type == "A":
-            url = "http://whatismyip.akamai.com"
+            url = "https://ip.3322.net/"
         elif self.dns_record_type == "AAAA":
-            url = "http://6.ipw.cn"
+            url = "https://6.ipw.cn"
         else:
             raise Exception("Unsupported DNS record type.")
         try:
             response = requests.get(url)
+            self.ip = response.text.strip()
         except Exception as e:
             raise Exception(f"Failed to get {self.dns_record_type} record. {e}")
-        self.ip = response.text
