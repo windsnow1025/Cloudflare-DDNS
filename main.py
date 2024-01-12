@@ -1,39 +1,51 @@
-import os
 import json
+import logging
+import os
 import time
+
+import schedule
+
 from ddns import DDNS
 
 
-def main():
+def load_config():
     if not os.path.exists('config.json'):
-        email = input("Enter your email: ")
-        global_api_key = input("Enter your global API key: ")
-        domain_name = input("Enter your domain name: ")
-        dns_record_name = input("Enter your DNS record name: ")
         config = {
-            "email": email,
-            "global_api_key": global_api_key,
-            "domain_name": domain_name,
-            "dns_record_name": dns_record_name
+            "email": input("Enter your email: "),
+            "global_api_key": input("Enter your global API key: "),
+            "dns_record_name": input("Enter your DNS record name (xxx.yyy.zzz): ")
         }
         with open('config.json', 'w') as f:
             json.dump(config, f)
     else:
         with open('config.json') as f:
             config = json.load(f)
+    return config
 
-    ddns = DDNS(config["email"], config["global_api_key"], config["domain_name"], config["dns_record_name"])
-    ddns.get_domain_id()
-    ddns.get_dns_record_id()
+
+def update_dns_record(ddns):
+    try:
+        record_content = ddns.get_record_content()
+        current_ip = ddns.fetch_current_ip(ddns.dns_record_type)
+        if current_ip != record_content:
+            logging.info(f"Current IP {current_ip} is different from DNS record {record_content}. Updating...")
+            ddns.update_dns_record(current_ip)
+        else:
+            logging.info("No update needed. IP address unchanged.")
+    except Exception as e:
+        logging.error(f"Error updating DNS record: {e}")
+
+
+def main():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    config = load_config()
+    ddns = DDNS(config["email"], config["global_api_key"], config["dns_record_name"])
+
+    schedule.every(10).seconds.do(update_dns_record, ddns=ddns)
+
     while True:
-        try:
-            ddns.get_dns_record()
-            ddns.get_ip()
-            if ddns.ip != ddns.dns_record_content:
-                ddns.update_dns_record()
-        except Exception as e:
-            print(e)
-        time.sleep(10)
+        schedule.run_pending()
+        time.sleep(1)
 
 
 if __name__ == '__main__':
