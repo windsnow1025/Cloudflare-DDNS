@@ -73,7 +73,7 @@ class DDNS:
         if dns_record_type == "A":
             url = "https://ip.3322.net/"
         elif dns_record_type == "AAAA":
-            url = "https://6.ipw.cn"
+            url = "https://speed.neu6.edu.cn/getIP.php"
         else:
             raise ValueError("Unsupported DNS record type.")
         try:
